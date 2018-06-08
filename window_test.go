@@ -15,18 +15,18 @@ func TestNewWindow(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test app name + icon
-	assert.Equal(t, "app name", *w.o.Title)
-	assert.Equal(t, "/path/to/default/icon", *w.o.Icon)
+	assert.Equal(t, "app name", *w.Options.Title)
+	assert.Equal(t, "/path/to/default/icon", *w.Options.Icon)
 
 	// Test in display
 	w, err = a.NewWindowInDisplay(newDisplay(&DisplayOptions{Bounds: &RectangleOptions{PositionOptions: PositionOptions{X: PtrInt(1), Y: PtrInt(2)}, SizeOptions: SizeOptions{Height: PtrInt(5), Width: PtrInt(6)}}}, true), "http://test.com", &WindowOptions{X: PtrInt(3), Y: PtrInt(4)})
 	assert.NoError(t, err)
-	assert.Equal(t, 4, *w.o.X)
-	assert.Equal(t, 6, *w.o.Y)
+	assert.Equal(t, 4, *w.Options.X)
+	assert.Equal(t, 6, *w.Options.Y)
 	w, err = a.NewWindowInDisplay(newDisplay(&DisplayOptions{Bounds: &RectangleOptions{PositionOptions: PositionOptions{X: PtrInt(1), Y: PtrInt(2)}, SizeOptions: SizeOptions{Height: PtrInt(5), Width: PtrInt(6)}}}, true), "http://test.com", &WindowOptions{})
 	assert.NoError(t, err)
-	assert.Equal(t, 1, *w.o.X)
-	assert.Equal(t, 2, *w.o.Y)
+	assert.Equal(t, 1, *w.Options.X)
+	assert.Equal(t, 2, *w.Options.Y)
 }
 
 func TestWindow_Actions(t *testing.T) {
@@ -54,7 +54,7 @@ func TestWindow_Actions(t *testing.T) {
 	assert.NoError(t, err)
 	testObjectAction(t, func() error { return w.Focus() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdFocus+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventFocus)
 	testObjectAction(t, func() error { return w.Hide() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdHide+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventHide)
-	assert.Equal(t, false, *w.o.Show)
+	assert.Equal(t, false, *w.Options.Show)
 	testObjectAction(t, func() error { return w.Log("message") }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdLog+"\",\"targetID\":\""+w.id+"\",\"message\":\"message\"}\n", "")
 	testObjectAction(t, func() error { return w.Maximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdMaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventMaximize)
 	testObjectAction(t, func() error { return w.Minimize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdMinimize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventMinimize)
@@ -64,9 +64,9 @@ func TestWindow_Actions(t *testing.T) {
 	testObjectAction(t, func() error { return w.MoveInDisplay(d, 3, 4) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdMove+"\",\"targetID\":\""+w.id+"\",\"windowOptions\":{\"x\":4,\"y\":6}}\n", EventNameWindowEventMove)
 	testObjectAction(t, func() error { return w.Resize(1, 2) }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdResize+"\",\"targetID\":\""+w.id+"\",\"windowOptions\":{\"height\":2,\"width\":1}}\n", EventNameWindowEventResize)
 	testObjectAction(t, func() error { return w.Restore() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdRestore+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventRestore)
-	assert.Equal(t, false, *w.o.Show)
+	assert.Equal(t, false, *w.Options.Show)
 	testObjectAction(t, func() error { return w.Show() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdShow+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventShow)
-	assert.Equal(t, true, *w.o.Show)
+	assert.Equal(t, true, *w.Options.Show)
 	testObjectAction(t, func() error { return w.Unmaximize() }, w.object, wrt, "{\"name\":\""+EventNameWindowCmdUnmaximize+"\",\"targetID\":\""+w.id+"\"}\n", EventNameWindowEventUnmaximize)
 }
 
