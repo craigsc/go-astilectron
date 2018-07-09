@@ -52,8 +52,8 @@ To import `go-astilectron` run:
 // Initialize astilectron
 var a, _ = astilectron.New(astilectron.Options{
     AppName: "<your app name>",
-    AppIconDefaultPath: "<your .png icon>",
-    AppIconDarwinPath:  "<your .icns icon>",
+    AppIconDefaultPath: "<your .png icon>", // If path is relative, it must be relative to the data directory
+    AppIconDarwinPath:  "<your .icns icon>", // Same here
     BaseDirectoryPath: "<where you want the provisioner to install the dependencies>",
 })
 defer a.Close()
@@ -90,6 +90,18 @@ w.Create()
 When creating a window you need to indicate a URL as well as options such as position, size, etc.
 
 This is pretty straightforward except the `astilectron.Ptr*` methods so let me explain: GO doesn't do optional fields when json encoding unless you use pointers whereas Electron does handle optional fields. Therefore I added helper methods to convert int, bool and string into pointers and used pointers in structs sent to Electron.
+
+## Open the dev tools
+
+When developing in JS, it's very convenient to debug your code using the browser window's dev tools:
+
+````go
+// Open dev tools
+w.OpenDevTools()
+
+// Close dev tools
+w.CloseDevTools()
+````
 
 ## Add listeners
 

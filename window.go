@@ -67,6 +67,7 @@ var (
 type Window struct {
 	*object
 	callbackIdentifier *identifier
+	m                  sync.Mutex // Locks o
 	o                  *WindowOptions
 	onMessageOnce      sync.Once
 	Session            *Session
@@ -79,6 +80,7 @@ type Window struct {
 // https://github.com/electron/electron/blob/v1.8.1/docs/api/browser-window.md
 type WindowOptions struct {
 	// Custom
+	HideOnClose       *bool              `json:"hideOnClose,omitempty"`
 	MessageBoxOnClose *MessageBoxOptions `json:"messageBoxOnClose,omitempty"`
 	MinimizeOnClose   *bool              `json:"minimizeOnClose,omitempty"`
 
@@ -156,7 +158,7 @@ type WebPreferences struct {
 }
 
 // newWindow creates a new window
-func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
+func newWindow(o Options, p Paths, url string, wo *WindowOptions, c *asticontext.Canceller, d *dispatcher, i *identifier, wrt *writer) (w *Window, err error) {
 	// Init
 	w = &Window{
 		callbackIdentifier: newIdentifier(),
@@ -166,8 +168,8 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 	w.Session = newSession(w.ctx, c, d, i, wrt)
 
 	// Check app details
-	if wo.Icon == nil && o.AppIconDefaultPath != "" {
-		wo.Icon = PtrStr(o.AppIconDefaultPath)
+	if wo.Icon == nil && p.AppIconDefaultSrc() != "" {
+		wo.Icon = PtrStr(p.AppIconDefaultSrc())
 	}
 	if wo.Title == nil && o.AppName != "" {
 		wo.Title = PtrStr(o.AppName)
@@ -177,6 +179,20 @@ func newWindow(o Options, url string, wo *WindowOptions, c *asticontext.Cancelle
 	w.On(EventNameWindowEventClosed, func(e Event) (deleteListener bool) {
 		w.cancel()
 		return true
+	})
+
+	// Show
+	w.On(EventNameWindowEventHide, func(e Event) (deleteListener bool) {
+		w.m.Lock()
+		defer w.m.Unlock()
+		w.o.Show = PtrBool(false)
+		return
+	})
+	w.On(EventNameWindowEventShow, func(e Event) (deleteListener bool) {
+		w.m.Lock()
+		defer w.m.Unlock()
+		w.o.Show = PtrBool(true)
+		return
 	})
 
 	// Parse url
@@ -263,6 +279,14 @@ func (w *Window) Hide() (err error) {
 	}
 	_, err = synchronousEvent(w.c, w, w.w, Event{Name: EventNameWindowCmdHide, TargetID: w.id}, EventNameWindowEventHide)
 	return
+}
+
+// IsShown returns whether the window is shown
+func (w *Window) IsShown() bool {
+	if err := w.isActionable(); err != nil {
+		return false
+	}
+	return w.o.Show != nil && *w.o.Show
 }
 
 // Log logs a message in the JS console of the window

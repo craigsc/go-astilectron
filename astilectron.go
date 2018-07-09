@@ -19,7 +19,7 @@ import (
 // Versions
 const (
 	DefaultAcceptTCPTimeout = 30 * time.Second
-	VersionAstilectron      = "0.22.0"
+	VersionAstilectron      = "0.24.0"
 	VersionElectron         = "1.8.1"
 )
 
@@ -84,7 +84,7 @@ type Supported struct {
 func New(o Options) (a *Astilectron, err error) {
 	// Validate the OS
 	if !IsValidOS(runtime.GOOS) {
-		err = errors.Wrapf(err, "OS %s is invalid")
+		err = errors.Wrapf(err, "OS %s is invalid", runtime.GOOS)
 		return
 	}
 
@@ -388,7 +388,7 @@ func (a *Astilectron) NewMenu(i []*MenuItemOptions) *Menu {
 
 // NewWindow creates a new window
 func (a *Astilectron) NewWindow(url string, o *WindowOptions) (*Window, error) {
-	return newWindow(a.options, url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
+	return newWindow(a.options, a.Paths(), url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
 
 // NewWindowInDisplay creates a new window in a specific display
@@ -404,7 +404,7 @@ func (a *Astilectron) NewWindowInDisplay(d *Display, url string, o *WindowOption
 	} else {
 		o.Y = PtrInt(d.Bounds().Y)
 	}
-	return newWindow(a.options, url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
+	return newWindow(a.options, a.Paths(), url, o, a.canceller, a.dispatcher, a.identifier, a.writer)
 }
 
 // NewTray creates a new tray
